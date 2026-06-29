@@ -1,0 +1,4 @@
+node_modules/
+*.bak
+.DS_Store
+# 度量日志在 .git/ai-metrics.log（位于 .git 内，本就不会被追踪）

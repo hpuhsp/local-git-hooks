@@ -1,0 +1,47 @@
+# === AI GENERATED FILE | claude-opus-4-8 | 2026-06-29 | DESKTOP-NEC290S\HSP ===
+# lefthook.yml — 本地 git hook 编排（全组共享，进版本控制）（规格 §2）
+# 安装：make setup（内部执行 lefthook install）。详见 README.md。
+#
+# 档位约定（规格 §4）：阻断（exit≠0）只放确定性、近零误报项；慢检查全部下沉 pre-push。
+# 试点：导出 QG_WARN_ONLY=1 可让阻断级降级为告警（规格 §6.7）。
+
+pre-commit:
+  parallel: true
+  commands:
+    secret-scan: # 阻断：gitleaks 扫描暂存区秘密
+      run: sh .githooks/checks/secret-scan.sh
+    merge-conflict: # 阻断：未解决的冲突标记
+      run: sh .githooks/checks/no-conflict-markers.sh {staged_files}
+    private-key: # 阻断：私钥/凭据文件（glob 命中即查）
+      glob: "*.{pem,key,p12,pfx,jks,keystore,env}"
+      run: sh .githooks/checks/block-sensitive-files.sh {staged_files}
+    no-commit-to-main: # 阻断：禁止直接提交 main/master
+      run: sh .githooks/checks/protect-branch.sh
+    format: # 自动修：按语言分流格式化（修复后自动重新暂存）
+      run: sh .githooks/checks/format.sh {staged_files}
+      stage_fixed: true
+    deps-check: # 告警：lockfile 一致性 / 新增依赖
+      run: sh .githooks/checks/deps-consistency.sh {staged_files}
+
+prepare-commit-msg:
+  commands:
+    ai-trailer-template: # 预置 AI 三档选项 + 读自动信号
+      run: sh .githooks/prepare-commit-msg "{1}"
+
+commit-msg:
+  commands:
+    signoff-and-trailer: # Signed-off-by 阻断 + 生成 AI trailer
+      run: sh .githooks/commit-msg "{1}"
+    commit-title: # 标题规范（Conventional Commits）
+      run: sh .githooks/checks/commit-title.sh "{1}"
+
+post-commit:
+  commands:
+    ai-metrics: # 异步度量埋点（不阻塞）
+      run: sh .githooks/post-commit
+
+pre-push:
+  parallel: true
+  commands:
+    affected-tests: # 阻断：受影响测试 / 类型检查（慢检查下沉于此）
+      run: sh .githooks/checks/affected-tests.sh

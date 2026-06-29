@@ -1,0 +1,15 @@
+#!/bin/sh
+# .githooks/post-commit — 异步发 AI 使用度量事件（规格 §4.3）
+# 后台执行，绝不阻塞提交；度量写入 .git/ 内，天然不进版本控制。
+{
+  ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+  SHA=$(git rev-parse HEAD)
+  DEGREE=$(git log -1 --format='%(trailers:key=Assisted-by,key=Co-authored-by,key=Generated-by,valueonly)' \
+            | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+  SIGNOFF=$(git log -1 --format='%(trailers:key=Signed-off-by,valueonly)' \
+            | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+  STAT=$(git show --shortstat --format= HEAD | tail -1 | sed 's/^[[:space:]]*//')
+  # 本地日志，便于事后聚合 AI 使用度量（未来可替换为发埋点事件）
+  printf '%s\t%s\t%s\t%s\n' "$SHA" "${DEGREE:-none}" "${SIGNOFF:-none}" "$STAT" \
+    >> "$ROOT/.git/ai-metrics.log"
+} &

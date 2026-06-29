@@ -1,0 +1,8 @@
+node_modules/
+# 锁文件由包管理器维护，勿用 prettier 重排
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+poetry.lock
+# 压缩产物
+*.min.*

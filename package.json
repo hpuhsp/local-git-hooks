@@ -1,0 +1,16 @@
+{
+  "name": "local-git-hooks",
+  "version": "0.1.0",
+  "private": true,
+  "description": "本地 git hook 编排（lefthook）+ AI 溯源 trailer + 通用门禁",
+  "scripts": {
+    "prepare": "lefthook install || true",
+    "setup": "sh scripts/setup.sh"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "lefthook": "^1.13.6",
+    "prettier": "^3.0.0"
+  }
+}
