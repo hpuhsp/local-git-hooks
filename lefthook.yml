@@ -7,11 +7,21 @@
 
 pre-commit:
   parallel: true
+  # === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-06-29 | modified | DESKTOP-NEC290S\HSP ===
+  skip: # 合并/变基期间跳过，避免解决冲突时被反复打扰
+    - merge
+    - rebase
+  # === AI MODIFIED END ===
   commands:
     secret-scan: # 阻断：gitleaks 扫描暂存区秘密
       run: sh .githooks/checks/secret-scan.sh
     merge-conflict: # 阻断：未解决的冲突标记
+      # === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-06-29 | modified | DESKTOP-NEC290S\HSP ===
       run: sh .githooks/checks/no-conflict-markers.sh {staged_files}
+    large-file: # 阻断：超阈值大文件（建议 Git LFS）
+      run: sh .githooks/checks/no-large-files.sh {staged_files}
+    # === AI MODIFIED END ===
+
     private-key: # 阻断：私钥/凭据文件（glob 命中即查）
       glob: "*.{pem,key,p12,pfx,jks,keystore,env}"
       run: sh .githooks/checks/block-sensitive-files.sh {staged_files}

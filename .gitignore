@@ -2,3 +2,20 @@ node_modules/
 *.bak
 .DS_Store
 # 度量日志在 .git/ai-metrics.log（位于 .git 内，本就不会被追踪）
+
+# 密钥 / 凭据：纵深防御第一道（钩子可被 --no-verify 绕过，先在这里挡掉）
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
