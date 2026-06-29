@@ -23,9 +23,13 @@ make setup                              # Linux / macOS / git-bash
 # 或   powershell -ExecutionPolicy Bypass -File scripts\setup.ps1   # Windows 原生
 ```
 
-`setup` 会：检测 `core.hooksPath` 冲突（避免覆盖 Husky 等）→ `lefthook install` → 赋脚本可执行权限 → 自检可选工具。
+`setup` 会：检测 `core.hooksPath` 冲突（避免覆盖 Husky 等）→ `lefthook install` → **缺失时 best-effort 自动安装 gitleaks**（winget/scoop/brew，设 `QG_SKIP_TOOL_INSTALL=1` 可跳过）→ 赋脚本可执行权限 → 自检可选工具。
 
-可选工具（缺失时对应检查**自动跳过/告警，不阻断**）：`gitleaks`、`prettier`、`ruff`/`black`、`ktlint`、`google-java-format`、`commitlint`（经 `npm install` 提供）。
+gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `brew install gitleaks`（macOS）/ `scoop install gitleaks`。
+
+其余可选工具（缺失时对应检查**自动跳过/告警，不阻断**）：`prettier`、`ruff`/`black`、`ktlint`、`google-java-format`、`commitlint`（经 `npm install` 提供）。
+
+> 受保护分支（`main`/`master`）的**初始提交**（空仓库、无父提交）自动放行，新仓库首次提交无需逃生门。
 
 ## 二、各钩子做什么
 
@@ -78,6 +82,7 @@ make setup                              # Linux / macOS / git-bash
 | `QG_AI_DEGREE` / `QG_AI_TOOL` | AI 自动信号来源                                                           |
 | `QG_ALLOW_COMMIT_TO_MAIN=1`   | 临时允许直接提交受保护分支                                                |
 | `QG_PROTECTED_BRANCHES`       | 自定义受保护分支（默认 `main master`）                                    |
+| `QG_SKIP_TOOL_INSTALL=1`      | `setup` 时跳过 gitleaks 的 best-effort 自动安装                           |
 | `QG_DIFF_RANGE`               | 未来 CI 复用：把检查对象从暂存区切到 diff range（规格 §7）                |
 
 ## 五、目录结构
