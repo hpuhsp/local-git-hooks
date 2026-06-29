@@ -37,6 +37,7 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 | ------------------ | ------------------------------------------------------- | ---------------------------- |
 | pre-commit         | gitleaks 秘密扫描                                       | **阻断**（未装则告警放行）   |
 | pre-commit         | 合并冲突标记 `<<<<<<<`                                  | **阻断**                     |
+| pre-commit         | 大文件（默认 >2MB，`QG_MAX_FILE_KB` 可调）              | **阻断**                     |
 | pre-commit         | 私钥/凭据文件（`*.pem/.key/.p12/.env` 等）              | **阻断**                     |
 | pre-commit         | 禁止直接提交 `main`/`master`                            | **阻断**                     |
 | pre-commit         | 按语言格式化（prettier/ruff/ktlint/google-java-format） | 自动修                       |
@@ -46,6 +47,8 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 | commit-msg         | 标题规范（Conventional Commits）                        | 阻断（未装则跳过）           |
 | post-commit        | 异步 AI 使用度量埋点                                    | 不阻塞                       |
 | pre-push           | 受影响测试 / 类型检查（慢检查下沉于此）                 | **阻断**                     |
+
+> `pre-commit` 在 **merge / rebase** 期间自动跳过，避免解决冲突时被反复打扰。
 
 ## 三、AI 参与度怎么报（两段式，覆盖率 100%）
 
@@ -76,14 +79,16 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 
 ## 四、环境变量开关
 
-| 变量                          | 作用                                                                      |
-| ----------------------------- | ------------------------------------------------------------------------- |
-| `QG_WARN_ONLY=1`              | **试点模式**：阻断级检查降级为「告警但放行」（规格 §6.7，全员推广前两周） |
-| `QG_AI_DEGREE` / `QG_AI_TOOL` | AI 自动信号来源                                                           |
-| `QG_ALLOW_COMMIT_TO_MAIN=1`   | 临时允许直接提交受保护分支                                                |
-| `QG_PROTECTED_BRANCHES`       | 自定义受保护分支（默认 `main master`）                                    |
-| `QG_SKIP_TOOL_INSTALL=1`      | `setup` 时跳过 gitleaks 的 best-effort 自动安装                           |
-| `QG_DIFF_RANGE`               | 未来 CI 复用：把检查对象从暂存区切到 diff range（规格 §7）                |
+| 变量                          | 作用                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| `QG_WARN_ONLY=1`              | **试点模式**：阻断级检查降级为「告警但放行」（规格 §6.7，全员推广前两周）      |
+| `QG_AI_DEGREE` / `QG_AI_TOOL` | AI 自动信号来源                                                                |
+| `QG_AI_EMAIL`                 | AI trailer 的邮箱（默认 `ai@noreply.local`）；令 `Co-authored-by` 可被平台识别 |
+| `QG_MAX_FILE_KB`              | 大文件阈值，单位 KB（默认 2048）                                               |
+| `QG_ALLOW_COMMIT_TO_MAIN=1`   | 临时允许直接提交受保护分支                                                     |
+| `QG_PROTECTED_BRANCHES`       | 自定义受保护分支（默认 `main master`）                                         |
+| `QG_SKIP_TOOL_INSTALL=1`      | `setup` 时跳过 gitleaks 的 best-effort 自动安装                                |
+| `QG_DIFF_RANGE`               | 未来 CI 复用：把检查对象从暂存区切到 diff range（规格 §7）                     |
 
 ## 五、目录结构
 
