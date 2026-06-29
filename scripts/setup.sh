@@ -40,6 +40,21 @@ chmod +x .githooks/checks/*.sh scripts/*.sh 2>/dev/null || true
 echo "▶ lefthook install ..."
 $LEFTHOOK install
 
+# === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-06-29 | modified | DESKTOP-NEC290S\HSP ===
+# ── gitleaks 引导安装（唯一高价值阻断项；缺失时 best-effort 自动装，失败不阻断）──
+if ! command -v gitleaks >/dev/null 2>&1 && [ "${QG_SKIP_TOOL_INSTALL:-0}" != "1" ]; then
+  echo "▶ 未发现 gitleaks，尝试自动安装（设 QG_SKIP_TOOL_INSTALL=1 可跳过）..."
+  if command -v winget >/dev/null 2>&1; then
+    winget install --id Gitleaks.Gitleaks -e --accept-source-agreements --accept-package-agreements --disable-interactivity || true
+  elif command -v scoop >/dev/null 2>&1; then
+    scoop install gitleaks || true
+  elif command -v brew >/dev/null 2>&1; then
+    brew install gitleaks || true
+  else
+    echo "   未找到 winget/scoop/brew，请手动安装：https://github.com/gitleaks/gitleaks/releases"
+  fi
+fi
+# === AI MODIFIED END ===
 echo ""
 echo "✅ hooks 已激活。可选工具自检（缺失项对应检查会跳过/告警，不阻断）："
 # === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-06-29 | modified | DESKTOP-NEC290S\HSP ===

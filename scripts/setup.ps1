@@ -19,5 +19,17 @@ if (Get-Command lefthook -ErrorAction SilentlyContinue) {
   exit 1
 }
 
+# gitleaks 引导安装（唯一高价值阻断项；缺失时 best-effort 自动装，失败不阻断）
+if (-not (Get-Command gitleaks -ErrorAction SilentlyContinue) -and $env:QG_SKIP_TOOL_INSTALL -ne '1') {
+  Write-Host "▶ 未发现 gitleaks，尝试自动安装（设 QG_SKIP_TOOL_INSTALL=1 可跳过）..."
+  if (Get-Command winget -ErrorAction SilentlyContinue) {
+    try { winget install --id Gitleaks.Gitleaks -e --accept-source-agreements --accept-package-agreements --disable-interactivity } catch {}
+  } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+    try { scoop install gitleaks } catch {}
+  } else {
+    Write-Host "   未找到 winget/scoop，请手动安装：https://github.com/gitleaks/gitleaks/releases"
+  }
+}
+
 Write-Host "✅ hooks 已激活。commitlint 经 npx 调用，需先 npm install。"
-Write-Host "ℹ️  可选格式化/扫描工具（gitleaks/prettier/ruff 等）缺失时对应检查会跳过或告警，不阻断。"
+Write-Host "ℹ️  可选格式化/扫描工具（prettier/ruff 等）缺失时对应检查会跳过或告警，不阻断。"

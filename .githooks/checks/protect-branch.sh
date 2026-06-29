@@ -7,7 +7,13 @@ PROTECTED="${QG_PROTECTED_BRANCHES:-main master}"
 branch=$(git symbolic-ref --short -q HEAD 2>/dev/null || true)
 
 [ -z "$branch" ] && exit 0                          # detached HEAD：不拦
+# === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-06-29 | modified | DESKTOP-NEC290S\HSP ===
 [ "${QG_ALLOW_COMMIT_TO_MAIN:-0}" = "1" ] && exit 0 # 显式逃生门
+
+# 初始提交（空仓库 / 无父提交）放行：新仓库首次提交不应被卡，避免逼用户敲逃生门
+git rev-parse --verify -q HEAD >/dev/null 2>&1 || exit 0
+# === AI MODIFIED END ===
+
 
 for p in $PROTECTED; do
   if [ "$branch" = "$p" ]; then
