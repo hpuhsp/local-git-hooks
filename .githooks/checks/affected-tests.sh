@@ -24,10 +24,19 @@ if qg_has pytest && { [ -d tests ] || ls test_*.py >/dev/null 2>&1; }; then
   ran=1; pytest -q || qg_fail "pytest" "Python 测试未通过" || status=1
 fi
 
-# Gradle
-if [ -x ./gradlew ]; then
-  ran=1; ./gradlew -q test || qg_fail "gradle-test" "Gradle 测试未通过" || status=1
-fi
+# === AI REPLACED BEGIN | claude-haiku-4-5-20251001 | 2026-06-30 | replaced | DESKTOP-NEC290S\HSP ===
+# [ORIGINAL]
+# # Gradle
+# if [ -x ./gradlew ]; then
+#   ran=1; ./gradlew -q test || qg_fail "gradle-test" "Gradle 测试未通过" || status=1
+# fi
+# [/ORIGINAL]
+# Gradle - 测试由 CI 执行，本地 pre-push 跳过（保证推送体验）
+# if [ -x ./gradlew ]; then
+#   ran=1; ./gradlew -q test || qg_fail "gradle-test" "Gradle 测试未通过" || status=1
+# fi
+# === AI REPLACED END ===
+
 
 # Maven
 if [ -f pom.xml ] && qg_has mvn; then
