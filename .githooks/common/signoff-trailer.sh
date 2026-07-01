@@ -1,0 +1,45 @@
+#!/bin/sh
+# === AI GENERATED FILE | claude-opus-4-8 | 2026-07-01 | DESKTOP-NEC290S\HSP ===
+# .githooks/common/signoff-trailer.sh — 强制 Signed-off-by（阻断）+ 生成 AI trailer（柔性）
+MSG_FILE="$1"
+
+# (1) 解析 AI 参与度：环境变量优先；否则取已取消注释的 QG-AI 行；否则 none
+DEGREE="${QG_AI_DEGREE:-$(grep -E '^QG-AI:' "$MSG_FILE" 2>/dev/null | head -1 \
+  | sed 's/^QG-AI:[[:space:]]*//; s/[[:space:]]*#.*$//; s/[[:space:]]*$//')}"
+DEGREE="${DEGREE:-none}"
+AI_TOOL="${QG_AI_TOOL:-unknown}"
+# Co-authored-by 需 "Name <email>" 才会被 GitLab/GitHub 识别为协作者；AI_TOOL 未自带邮箱则补一个
+AI_EMAIL="${QG_AI_EMAIL:-ai@noreply.local}"
+case "$AI_TOOL" in
+  *"<"*"@"*">"*) AI_IDENT="$AI_TOOL" ;;
+  *)             AI_IDENT="$AI_TOOL <$AI_EMAIL>" ;;
+esac
+
+# (2) 先清理模板残留的 QG-AI 行（注释与已取消注释的）+ 分隔线，避免污染正文 / 干扰 trailer 解析
+sed -i.bak '/^#\{0,1\} *QG-AI:/d; /^# ─/d' "$MSG_FILE" && rm -f "$MSG_FILE.bak"
+
+# (3) 生成 AI trailer（柔性：不阻断，默认 none 不写）
+case "$DEGREE" in
+  assisted)    git interpret-trailers --in-place --trailer "Assisted-by: $AI_IDENT"   "$MSG_FILE" ;;
+  co-authored) git interpret-trailers --in-place --trailer "Co-authored-by: $AI_IDENT" "$MSG_FILE" ;;
+  generated)   git interpret-trailers --in-place --trailer "Generated-by: $AI_IDENT"  "$MSG_FILE" ;;
+  none)        : ;;
+  *)           echo "⚠️  未知 QG-AI 取值 '$DEGREE'，已忽略（仅 assisted/co-authored/generated）" >&2 ;;
+esac
+
+# (4) 强制 Signed-off-by（阻断级）——若无则按 git 身份自动补；补不出则拒绝
+if ! grep -qE '^Signed-off-by: .+ <.+@.+>' "$MSG_FILE"; then
+  NAME="$(git config user.name)"
+  EMAIL="$(git config user.email)"
+  if [ -n "$NAME" ] && [ -n "$EMAIL" ]; then
+    git interpret-trailers --in-place --trailer "Signed-off-by: $NAME <$EMAIL>" "$MSG_FILE"
+  else
+    echo "❌ 缺少 Signed-off-by，且 user.name/user.email 未配置。" >&2
+    echo "   请先配置 git 身份后重试：" >&2
+    echo "     git config user.name  \"Your Name\"" >&2
+    echo "     git config user.email \"you@example.com\"" >&2
+    echo "   或提交时显式加 -s：git commit -s" >&2
+    exit 1
+  fi
+fi
+exit 0

@@ -1,9 +1,10 @@
 #!/bin/sh
-# === AI GENERATED FILE | claude-opus-4-8 | 2026-06-29 | DESKTOP-NEC290S\HSP ===
-# scripts/setup.sh — 安装并激活本地 git hooks（规格 §2/§6.1）
-#   - 检测 git 仓库与 core.hooksPath 冲突（避免覆盖 Husky 等）
-#   - 找到 lefthook（系统二进制或 npx 本地依赖）并执行 lefthook install
-#   - 赋予 hook 脚本可执行权限，自检可选工具
+# === AI GENERATED FILE | claude-opus-4-8 | 2026-07-01 | DESKTOP-NEC290S\HSP ===
+# scripts/setup.sh — 安装并激活本地 git hooks（纯 core.hooksPath 文件夹工具集）
+#   - 检测是否 git 仓库
+#   - 侦测已有 .git/hooks 本地钩子，提示可能被 core.hooksPath 屏蔽
+#   - git config core.hooksPath .githooks（激活；无需任何二进制/Node）
+#   - 赋脚本可执行权限，best-effort 引导安装 gitleaks，自检可选工具
 set -e
 
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
@@ -12,35 +13,28 @@ if ! git rev-parse --git-dir >/dev/null 2>&1; then
 fi
 cd "$(git rev-parse --show-toplevel)"
 
-# ── hooksPath 冲突检测 ─────────────────────────────────────
+# ── 已有 hooksPath / 本地钩子冲突提示 ──────────────────────────
 existing="$(git config --get core.hooksPath || true)"
-if [ -n "$existing" ]; then
-  echo "⚠️  检测到 core.hooksPath = '$existing'。"
-  echo "    lefthook 默认安装到 .git/hooks；若 core.hooksPath 指向别处（如 Husky 的 .husky），"
-  echo "    git 将忽略 lefthook 的 hooks。请先协调："
-  echo "      git config --unset core.hooksPath   # 或与现有方案合并"
+if [ -n "$existing" ] && [ "$existing" != ".githooks" ]; then
+  echo "⚠️  当前 core.hooksPath = '$existing'（如 Husky 的 .husky）。"
+  echo "    继续将改为 .githooks；若需与现有方案并存，请先协调。"
+fi
+hookdir="$(git rev-parse --git-path hooks)"
+if ls "$hookdir"/* >/dev/null 2>&1 && ls "$hookdir" | grep -qvE '\.sample$'; then
+  echo "ℹ️  侦测到 $hookdir 下已有本地钩子；启用 core.hooksPath 后 git 将只走 .githooks，"
+  echo "    原有钩子会被忽略。如仍需保留，请手动合并进 .githooks/。"
 fi
 
-# ── 定位 lefthook ─────────────────────────────────────────
-if command -v lefthook >/dev/null 2>&1; then
-  LEFTHOOK="lefthook"
-elif command -v npx >/dev/null 2>&1 && npx --no-install lefthook version >/dev/null 2>&1; then
-  LEFTHOOK="npx --no-install lefthook"
-else
-  echo "❌ 未找到 lefthook，请任选其一安装后重试：" >&2
-  echo "    - npm i -D lefthook   然后 npm install" >&2
-  echo "    - brew install lefthook / scoop install lefthook / winget install evilmartians.lefthook" >&2
-  exit 1
-fi
+# ── 激活：指向版本控制内的 .githooks ──────────────────────────
+git config core.hooksPath .githooks
+echo "▶ 已设置 core.hooksPath = .githooks"
 
 # ── 赋可执行权限（Unix 必需；Windows 无害）─────────────────────
-chmod +x .githooks/commit-msg .githooks/prepare-commit-msg .githooks/post-commit 2>/dev/null || true
-chmod +x .githooks/checks/*.sh scripts/*.sh 2>/dev/null || true
+chmod +x .githooks/pre-commit .githooks/pre-push .githooks/commit-msg \
+         .githooks/prepare-commit-msg .githooks/post-commit 2>/dev/null || true
+chmod +x .githooks/lib/*.sh .githooks/common/*.sh 2>/dev/null || true
+find .githooks/stacks -name '*.sh' -exec chmod +x {} + 2>/dev/null || true
 
-echo "▶ lefthook install ..."
-$LEFTHOOK install
-
-# === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-06-29 | modified | DESKTOP-NEC290S\HSP ===
 # ── gitleaks 引导安装（唯一高价值阻断项；缺失时 best-effort 自动装，失败不阻断）──
 if ! command -v gitleaks >/dev/null 2>&1 && [ "${QG_SKIP_TOOL_INSTALL:-0}" != "1" ]; then
   echo "▶ 未发现 gitleaks，尝试自动安装（设 QG_SKIP_TOOL_INSTALL=1 可跳过）..."
@@ -54,19 +48,14 @@ if ! command -v gitleaks >/dev/null 2>&1 && [ "${QG_SKIP_TOOL_INSTALL:-0}" != "1
     echo "   未找到 winget/scoop/brew，请手动安装：https://github.com/gitleaks/gitleaks/releases"
   fi
 fi
-# === AI MODIFIED END ===
+
 echo ""
-echo "✅ hooks 已激活。可选工具自检（缺失项对应检查会跳过/告警，不阻断）："
-# === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-06-29 | modified | DESKTOP-NEC290S\HSP ===
-check_tool() { # 全局 PATH 或 npm 本地依赖（node_modules）任一可用即视为可用
+echo "✅ hooks 已激活（无需 Node / lefthook）。可选工具自检（缺失项对应检查会跳过/告警，不阻断）："
+check_tool() {
   if command -v "$1" >/dev/null 2>&1; then
-    echo "   ✓ $1（全局）"
-  elif command -v npx >/dev/null 2>&1 && npx --no-install "$1" --version >/dev/null 2>&1; then
-    echo "   ✓ $1（本地 node_modules）"
+    echo "   ✓ $1"
   else
     echo "   - $1（未安装）"
   fi
 }
-for t in gitleaks prettier commitlint ruff black ktlint google-java-format; do check_tool "$t"; done
-# === AI MODIFIED END ===
-
+for t in gitleaks google-java-format ktlint; do check_tool "$t"; done

@@ -1,8 +1,8 @@
 #!/bin/sh
-# === AI GENERATED FILE | claude-opus-4-8 | 2026-06-29 | DESKTOP-NEC290S\HSP ===
-# .githooks/checks/block-sensitive-files.sh — 阻断：私钥 / 凭据文件（规格 §3）
-# lefthook 已用 glob 预筛；这里再独立判定一次，便于未来 CI / 全量扫描复用。
-. "$(dirname "$0")/_lib.sh"
+# === AI GENERATED FILE | claude-opus-4-8 | 2026-07-01 | DESKTOP-NEC290S\HSP ===
+# .githooks/common/block-sensitive-files.sh — 阻断：私钥 / 凭据文件
+# 按文件名判定；便于未来 CI / 全量扫描复用。
+. "$(dirname "$0")/../lib/_lib.sh"
 
 files=$(qg_changed_files "$@")
 [ -z "$files" ] && exit 0
@@ -18,7 +18,7 @@ if [ -n "$hits" ]; then
   qg_fail "private-key" "检测到疑似私钥 / 凭据文件，禁止提交：
 $list
 
-若确为误报：重命名为 *.example，或在 lefthook.yml / .gitleaksignore 中显式豁免。"
+若确为误报：重命名为 *.example，或在 .gitleaksignore 中显式豁免。"
   exit $?
 fi
 exit 0

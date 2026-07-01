@@ -1,7 +1,7 @@
 #!/bin/sh
-# === AI GENERATED FILE | claude-opus-4-8 | 2026-06-29 | DESKTOP-NEC290S\HSP ===
-# .githooks/checks/no-conflict-markers.sh — 阻断：未解决的合并冲突标记（规格 §3）
-. "$(dirname "$0")/_lib.sh"
+# === AI GENERATED FILE | claude-opus-4-8 | 2026-07-01 | DESKTOP-NEC290S\HSP ===
+# .githooks/common/no-conflict-markers.sh — 阻断：未解决的合并冲突标记
+. "$(dirname "$0")/../lib/_lib.sh"
 
 files=$(qg_changed_files "$@" | qg_existing_files)
 [ -z "$files" ] && exit 0

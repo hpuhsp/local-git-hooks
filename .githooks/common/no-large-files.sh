@@ -1,9 +1,9 @@
 #!/bin/sh
-# === AI GENERATED FILE | claude-opus-4-8 | 2026-06-29 | DESKTOP-NEC290S\HSP ===
-# .githooks/checks/no-large-files.sh — 阻断：新增/改动的大文件（规格 §3）
+# === AI GENERATED FILE | claude-opus-4-8 | 2026-07-01 | DESKTOP-NEC290S\HSP ===
+# .githooks/common/no-large-files.sh — 阻断：新增/改动的大文件
 #   阈值 QG_MAX_FILE_KB（默认 2048KB=2MB）；超过即拒，建议改用 Git LFS。
 #   只看大小、不按"是否二进制"拦——后者误报高，违背"阻断档近零误报"。
-. "$(dirname "$0")/_lib.sh"
+. "$(dirname "$0")/../lib/_lib.sh"
 
 MAX_KB="${QG_MAX_FILE_KB:-2048}"
 files=$(qg_changed_files "$@" | qg_existing_files)
