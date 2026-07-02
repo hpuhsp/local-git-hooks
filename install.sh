@@ -6,6 +6,9 @@
 # 本地：sh install.sh                         （在目标仓库根目录运行）
 # 离线：QG_LOCAL_SRC=/path/to/kit sh install.sh
 # 卸载：sh install.sh --uninstall
+# === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-07-02 | modified | DESKTOP-NEC290S\HSP ===
+# 发版：sh install.sh --bump [版本]   （maintainer 用；在工具集仓库根 bump VERSION）
+# === AI MODIFIED END ===
 # 变量：QG_REF=<分支/tag>（默认 master）
 set -eu
 
@@ -20,6 +23,29 @@ if [ "${1:-}" = "--uninstall" ]; then
   git config --unset core.hooksPath 2>/dev/null || true
   echo "✅ 已停用（git config --unset core.hooksPath）。.githooks/ 目录仍在，如需彻底移除请手动删除。"
   exit 0
+# === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-07-02 | modified | DESKTOP-NEC290S\HSP ===
+fi
+
+# ── 发版 bump：更新 .githooks/VERSION（maintainer 在工具集仓库根运行）──
+if [ "${1:-}" = "--bump" ]; then
+  vf=".githooks/VERSION"
+  [ -f "$vf" ] || { echo "❌ 未找到 $vf（请在工具集仓库根运行 --bump）" >&2; exit 1; }
+  old="$(tr -d '[:space:]' <"$vf")"
+  if [ -n "${2:-}" ]; then
+    new="$2"                                   # 显式指定版本
+  else
+    today="$(date +%Y.%m.%d)"                  # 默认取当天；同日再 bump 则递增后缀
+    case "$old" in
+      "$today")   new="$today.1" ;;
+      "$today".*) new="$today.$(( ${old##*.} + 1 ))" ;;
+      *)          new="$today" ;;
+    esac
+  fi
+  printf '%s\n' "$new" >"$vf"
+  echo "▶ VERSION: $old → $new"
+  echo "  下一步：git add .githooks/VERSION && git commit -m \"chore(release): $new\" && git push"
+  exit 0
+# === AI MODIFIED END ===
 fi
 
 # ── 取得工具集来源：本地指定 / 远程克隆 ─────────────────────────

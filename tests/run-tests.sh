@@ -253,6 +253,18 @@ printf 'feat: 自动信号时不注入\n' >"$1"
 EOF
 ok "J5 有自动信号时编辑器不注入" 'echo 5 >j5.txt && git add j5.txt && QG_AI_DEGREE=assisted GIT_EDITOR="sh ed-no-tpl.sh" git commit -q && git log -1 --format=%B | grep -q "^Assisted-by:"'
 
+# === AI MODIFIED BEGIN | claude-fable-5 | 2026-07-02 | modified | DESKTOP-NEC290S\HSP ===
+# ════ K. install.sh --bump 发版（maintainer 侧） ═════════════════
+echo "K. install --bump"
+new_repo repo-bump
+TODAY="$(date +%Y.%m.%d)"
+printf '2020.01.01\n' >.githooks/VERSION
+ok "K1 显式指定版本" "sh '$ROOT/install.sh' --bump 9.9.9 >/dev/null && [ \"\$(cat .githooks/VERSION | tr -d '[:space:]')\" = '9.9.9' ]"
+printf '2020.01.01\n' >.githooks/VERSION
+ok "K2 默认取当天日期" "sh '$ROOT/install.sh' --bump >/dev/null && [ \"\$(cat .githooks/VERSION | tr -d '[:space:]')\" = '$TODAY' ]"
+ok "K3 同日再发递增后缀" "sh '$ROOT/install.sh' --bump >/dev/null && [ \"\$(cat .githooks/VERSION | tr -d '[:space:]')\" = '$TODAY.1' ]"
+ok "K4 无 VERSION 时报错退出" "rm -f .githooks/VERSION; ! sh '$ROOT/install.sh' --bump >/dev/null 2>&1"
+# === AI MODIFIED END ===
 # ════ 汇总 ════════════════════════════════════════════════════
 TOTAL=$((PASS + FAIL))
 RATE=$((PASS * 100 / TOTAL))

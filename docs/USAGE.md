@@ -265,6 +265,21 @@ sh .githooks/common/no-large-files.sh
 # … 同一批 .githooks/common/*.sh 直接复用，零重写
 ```
 
+### 2.11 维护者：发版流程（发版小抄）
+
+改动钩子后，四步把新版发出去：
+
+```bash
+sh tests/run-tests.sh            # 1. 回归全绿
+sh install.sh --bump             # 2. bump 版本戳（默认当天 YYYY.MM.DD；同日多次自动加 .1/.2；也可显式 --bump 2026.08.01）
+git add -A && git commit -m "chore(release): $(cat .githooks/VERSION)"
+git push                         # 4. 推送
+```
+
+接入方**无需任何操作**：各项目 `post-commit` 的限流提示（每天最多一次）会告知有新版，重跑一行 `install.sh` 即完成更新。
+
+> 忘记 bump = 接入方收不到提示。所以发版永远走 `--bump`，别手改 VERSION。
+
 ---
 
 ## 三、目录结构
