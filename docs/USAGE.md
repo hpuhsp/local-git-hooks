@@ -70,38 +70,46 @@ Windows 原生：`powershell -ExecutionPolicy Bypass -File scripts\setup.ps1`。
 
 ### 2.2 接入到已有开发项目（最小侵入）
 
-把这套钩子搬进**另一个已在开发的 Android / Java 项目**时，**不动业务代码**，只做加法。所有命令都在**目标项目根目录**（有 `.git` 的那层）执行。
+把这套钩子搬进**另一个已在开发的 Android / Java 项目**时，**不动业务代码**，只做加法。
 
-**第 1 步 · 拷入文件**
-
-| 必带（核心）                    | 可选                                        |
-| ------------------------------- | ------------------------------------------- |
-| `.githooks/`（整个目录）        | `scripts/setup.*`、`Makefile`（安装便捷脚本）|
-| —                               | `.gitattributes` 的 LF 规则（无则新建，有则并入）|
-| —                               | `.gitignore` 的 secrets 段（并入几行）      |
-
-> **不需要**任何 `package.json` / `lefthook.yml` / `commitlint.config.js`——它们已被移除。
->
-> `.gitattributes` 建议并入（防 Windows 下 CRLF 破坏 shebang）：
->
-> ```
-> .githooks/** text eol=lf
-> *.sh text eol=lf
-> ```
-
-**第 2 步 · 激活并提交**
+**方式 A · 一键接入（推荐）**——在**目标仓库根目录**跑一行：
 
 ```bash
-sh scripts/setup.sh                              # 或直接 git config core.hooksPath .githooks
-git add .githooks .gitattributes                 # 连同上面拷入的文件
-git commit -m "chore: 接入本地 git hooks"
+curl -fsSL https://raw.githubusercontent.com/hpuhsp/local-git-hooks/master/install.sh | sh
+git add .githooks .gitattributes && git commit -m "chore: 接入本地 git hooks"
 ```
 
-提交后，团队每位成员拉到这些文件，各自跑一次 `sh scripts/setup.sh`（本质就是一行 `git config`）即生效。
+`install.sh` 自动完成：拉取工具集 → 落地 `.githooks/` → 合并 `.gitattributes` 的 LF 规则 → `git config core.hooksPath .githooks` → 赋权 → 引导装 gitleaks。**幂等**（重复运行即更新，保留你自加的 `stacks/*.d/` 脚本）。卸载 `sh install.sh --uninstall`；离线 `QG_LOCAL_SRC=/path/to/kit sh install.sh`。
 
-> **侵入面**：本质是「1 个目录 `.githooks/` + 一行 `git config` + 几行合并」。**无 Node、无二进制**。激活状态写在本地 `.git/config`（不入库），故每个 clone 需各自跑一次 setup。
+> ⚠️ `curl | sh` 会执行远程脚本，请确认来源可信（是你自己的仓库），或先下载 `install.sh` 审阅、按需 `QG_REF=<commit/tag>` 固定版本。
+
+**方式 B · 手动拷入**——只需两样：
+
+| 必带                     | 说明                                                     |
+| ------------------------ | -------------------------------------------------------- |
+| `.githooks/`（整个目录） | 工具集本体                                               |
+| `.gitattributes` 两行    | 防 Windows CRLF 破坏 shebang（无则新建，有则**并入**）   |
+
+```
+.githooks/** text eol=lf
+*.sh text eol=lf
+```
+
+然后激活并提交：
+
+```bash
+git config core.hooksPath .githooks
+git add .githooks .gitattributes && git commit -m "chore: 接入本地 git hooks"
+```
+
+> **不需要**任何 `package.json` / `lefthook.yml` / `commitlint.config.js`——纯 shell，零 Node。
+> `scripts/`、`Makefile`、`.gitignore` 的 secrets 段均为**可选**，不影响钩子运行。
+
+**团队协作**：以上文件进版本控制后，成员 `git pull` 拿到，各自跑一次 `install.sh` / `setup.sh`（本质一行 `git config`）即生效——因为 `core.hooksPath` 是本地配置，不随仓库分发。
+
+> **侵入面**：本质是「1 个目录 `.githooks/` + 一行 `git config` + `.gitattributes` 两行」。无 Node、无二进制。
 >
-> **唯一冲突点**：项目已用 Husky 时 `core.hooksPath` 已被占用（指向 `.husky`），`setup` 会检测并提示；启用本工具集会让 git 只走 `.githooks`，原有 `.git/hooks` 下的本地钩子被忽略，需手动合并。
+> **唯一冲突点**：项目已用 Husky 时 `core.hooksPath` 已被占用（指向 `.husky`），`install`/`setup` 会检测并提示；启用本工具集会让 git 只走 `.githooks`，原有 `.git/hooks` 下的本地钩子被忽略，需手动合并。
 
 **第 3 步 · 按需固定技术栈（可选）**
 

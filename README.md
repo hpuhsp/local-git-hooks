@@ -8,7 +8,17 @@
 
 ## 一、安装
 
-前置：目标目录是 git 仓库（`git init`）。一键激活：
+前置：目标目录是 git 仓库（`git init`）。
+
+**A. 一键接入到任意项目（推荐）**——在**目标仓库根目录**跑一行，自动拉取工具集、落地 `.githooks/`、合并 `.gitattributes` 的 LF 规则、激活并引导装 gitleaks：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hpuhsp/local-git-hooks/master/install.sh | sh
+```
+
+> 幂等：重复运行即更新（保留你自加的 `stacks/*.d/` 脚本）。卸载：`sh install.sh --uninstall`。离线：`QG_LOCAL_SRC=/path/to/kit sh install.sh`。
+
+**B. 已在本仓库内**——直接激活：
 
 ```bash
 sh scripts/setup.sh                                           # Linux / macOS / git-bash
@@ -16,6 +26,8 @@ sh scripts/setup.sh                                           # Linux / macOS / 
 ```
 
 `setup` 会：检测 `core.hooksPath` 冲突（避免覆盖 Husky） → `git config core.hooksPath .githooks` → 赋脚本可执行权限 → **缺失时 best-effort 自动装 gitleaks**（winget/scoop/brew，`QG_SKIP_TOOL_INSTALL=1` 可跳过） → 自检可选工具。
+
+**接入只落两样东西**：`.githooks/`（工具集目录）+ `.gitattributes` 里两行 LF 规则（防 Windows CRLF 破坏 shebang）。激活状态写在本地 `.git/config`（不入库），故每个 clone 需各自跑一次 `install.sh`/`setup.sh`。
 
 gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `brew install gitleaks`（macOS）/ `scoop install gitleaks`。
 
