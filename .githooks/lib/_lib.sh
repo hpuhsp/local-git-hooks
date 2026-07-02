@@ -34,7 +34,13 @@ qg_fail() {
 # ── 文件清单（解耦 staged / diff-range）─────────────────────────
 # 返回本次要检查的文件（每行一个），按优先级：
 #   1) QG_DIFF_RANGE 已设置（未来 CI）：git diff --name-only <range>
-#   2) 否则有位置参数（透传的文件列表）：直接用之
+# === AI REPLACED BEGIN | claude-fable-5 | 2026-07-02 | replaced | DESKTOP-NEC290S\HSP ===
+# [ORIGINAL]
+# #   2) 否则有位置参数（透传的文件列表）：直接用之
+# [/ORIGINAL]
+#   2) 否则有位置参数（调用方显式传入，如栈叠加脚本 / 测试）：直接用之
+# === AI REPLACED END ===
+
 #   3) 否则退回当前暂存区：git diff --cached --name-only
 qg_changed_files() {
   if [ -n "${QG_DIFF_RANGE:-}" ]; then

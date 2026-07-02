@@ -1,5 +1,5 @@
 #!/bin/sh
-# .githooks/post-commit — 异步发 AI 使用度量事件（规格 §4.3）
+# .githooks/post-commit — 异步发 AI 使用度量事件
 # 后台执行，绝不阻塞提交；度量写入 .git/ 内，天然不进版本控制。
 {
   ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0

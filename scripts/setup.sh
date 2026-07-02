@@ -20,7 +20,10 @@ if [ -n "$existing" ] && [ "$existing" != ".githooks" ]; then
   echo "    继续将改为 .githooks；若需与现有方案并存，请先协调。"
 fi
 hookdir="$(git rev-parse --git-path hooks)"
-if ls "$hookdir"/* >/dev/null 2>&1 && ls "$hookdir" | grep -qvE '\.sample$'; then
+# === AI MODIFIED BEGIN | claude-fable-5 | 2026-07-02 | modified | DESKTOP-NEC290S\HSP ===
+if ls "$hookdir" 2>/dev/null | grep -qvE '\.sample$'; then
+# === AI MODIFIED END ===
+
   echo "ℹ️  侦测到 $hookdir 下已有本地钩子；启用 core.hooksPath 后 git 将只走 .githooks，"
   echo "    原有钩子会被忽略。如仍需保留，请手动合并进 .githooks/。"
 fi

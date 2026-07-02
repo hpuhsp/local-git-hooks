@@ -21,10 +21,10 @@ run no-large-files
 run block-sensitive-files
 run deps-consistency          # 告警级，qg_fail 不触发，fail 不受影响
 
-# ── 格式化：原地修复后把已暂存文件重新入库 ──
+# ── 格式化：原地修复后重新入库（仅限 format.sh 处理的 Java/Kotlin，避免带入无关的未暂存改动）──
 sh "$here/common/format.sh"
-git diff --cached --name-only --diff-filter=ACMR | while IFS= read -r f; do
-  [ -n "$f" ] && [ -f "$f" ] && git add -- "$f"
+git diff --cached --name-only --diff-filter=ACMR | grep -iE '\.(java|kts?)$' | while IFS= read -r f; do
+  [ -f "$f" ] && git add -- "$f"
 done
 
 # ── 栈叠加层（按侦测结果，可为空）──

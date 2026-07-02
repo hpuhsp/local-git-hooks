@@ -46,7 +46,7 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 
 ## 三、通用层 + 栈叠加（怎么支持多栈）
 
-三个栈的差异其实很小（主要是「用哪个格式化器」），所以设计成 **一层厚通用 + 一层薄叠加**：
+两个栈的差异其实很小（主要是「用哪个格式化器」），所以设计成 **一层厚通用 + 一层薄叠加**：
 
 - **`common/`**：全栈通用，永远跑（占 90%）。格式化按**文件扩展名**分流（`.java`→google-java-format，`.kt`→ktlint），天然支持混合仓。
 - **`stacks/<栈>/`**：栈专属额外规则，按 `lib/detect.sh` 侦测结果**自动叠加**，默认空、按需后补（如 android/detekt、java/checkstyle）。
@@ -98,6 +98,7 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 ```
 scripts/setup.{sh,ps1}           # 一键激活（core.hooksPath + gitleaks 引导 + 自检）
 Makefile                         # make setup → sh scripts/setup.sh
+tests/run-tests.sh               # 回归测试：sh tests/run-tests.sh（49 项场景断言）
 .githooks/                       # 整个工具集，cp 进任何仓库即用
   pre-commit                     # 编排：通用层 + 栈叠加（merge/rebase 跳过）
   pre-push                       # 编排：慢检查下沉处（默认交 CI）

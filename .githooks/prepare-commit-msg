@@ -1,5 +1,5 @@
 #!/bin/sh
-# .githooks/prepare-commit-msg — 预置 AI 三档选项 + 读自动信号（规格 §4.1）
+# .githooks/prepare-commit-msg — 预置 AI 三档选项 + 读自动信号
 # 两段式取值：优先工具自动信号；读不到则在编辑器里预置三档供取消注释自报。
 MSG_FILE="$1"
 
