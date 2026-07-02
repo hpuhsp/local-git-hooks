@@ -218,6 +218,20 @@ else
   echo "H. gitleaks 未安装，跳过（不计入统计）"
 fi
 
+# === AI MODIFIED BEGIN | claude-opus-4-8 | 2026-07-02 | modified | DESKTOP-NEC290S\HSP ===
+# ════ I. 更新提示（VERSION 戳 + 限流通知，离线用 QG_UPDATE_URL 打桩） ══
+echo "I. 更新提示"
+new_repo repo-update
+UC=".githooks/lib/update-check.sh"
+RS="$TMP/rv_same"
+RN="$TMP/rv_new"
+cp .githooks/VERSION "$RS"       # 远端=本地版本
+printf 'ZZZZ.99.99\n' >"$RN"     # 远端=不同版本
+ok "I1 QG_NO_UPDATE_CHECK=1 静默" "[ -z \"\$(rm -f .git/.hooks-update-check; QG_NO_UPDATE_CHECK=1 QG_UPDATE_URL='$RN' sh '$UC' 2>&1)\" ]"
+ok "I2 远端同版本不提示" "[ -z \"\$(rm -f .git/.hooks-update-check; QG_UPDATE_URL='$RS' sh '$UC' 2>&1)\" ]"
+ok "I3 远端新版本给出提示" "rm -f .git/.hooks-update-check; QG_UPDATE_URL='$RN' sh '$UC' 2>&1 | grep -q 新版"
+ok "I4 节流：24h 内不再查" "[ -z \"\$(QG_UPDATE_URL='$RN' sh '$UC' 2>&1)\" ]"
+# === AI MODIFIED END ===
 # ════ 汇总 ════════════════════════════════════════════════════
 TOTAL=$((PASS + FAIL))
 RATE=$((PASS * 100 / TOTAL))

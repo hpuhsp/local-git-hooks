@@ -81,6 +81,8 @@ git add .githooks .gitattributes && git commit -m "chore: 接入本地 git hooks
 
 `install.sh` 自动完成：拉取工具集 → 落地 `.githooks/` → 合并 `.gitattributes` 的 LF 规则 → `git config core.hooksPath .githooks` → 赋权 → 引导装 gitleaks。**幂等**（重复运行即更新，保留你自加的 `stacks/*.d/` 脚本）。卸载 `sh install.sh --uninstall`；离线 `QG_LOCAL_SRC=/path/to/kit sh install.sh`。
 
+> **更新策略**：更新是**手动**的（重跑上面这行）。工具带一个 `.githooks/VERSION` 版本戳，`post-commit` 里**每天最多一次**异步查远端版本，有新版就提示一行更新命令——**只通知、绝不自改**（让钩子静默拉取远端代码覆盖自身是供应链风险）。关掉提示：`QG_NO_UPDATE_CHECK=1`。老仓库（无 `VERSION`）不打扰，重装一次后即纳入提示。
+
 > ⚠️ `curl | sh` 会执行远程脚本，请确认来源可信（是你自己的仓库），或先下载 `install.sh` 审阅、按需 `QG_REF=<commit/tag>` 固定版本。
 
 **方式 B · 手动拷入**——只需两样：
@@ -218,6 +220,8 @@ QG-AI: co-authored   # ← 选中
 | `QG_ALLOW_COMMIT_TO_MAIN`     | `0`                | 设 `1` → 临时允许直接提交受保护分支                             |
 | `QG_PROTECTED_BRANCHES`       | `main master`      | 自定义受保护分支                                                |
 | `QG_SKIP_TOOL_INSTALL`        | `0`                | 设 `1` → setup 跳过 gitleaks 自动安装                           |
+| `QG_NO_UPDATE_CHECK`          | `0`                | 设 `1` → 关闭「有新版可用」提示（仅通知、每天最多一次）         |
+| `QG_UPDATE_URL`               | GitHub raw         | 版本源覆盖（自建镜像 / 测试打桩）                               |
 | `QG_DIFF_RANGE`               | —                  | 未来 CI：把检查对象从暂存区切到 diff range                      |
 
 ### 2.8 常见场景速查

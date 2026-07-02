@@ -37,6 +37,8 @@ Optional formatters (when missing, the corresponding formatting **auto-skips**, 
 
 > The **initial commit** on a protected branch (`main`/`master`) — empty repo, no parent — is allowed automatically.
 
+**Staying up to date**: updates are manual by design — re-run the one-liner above (idempotent, keeps your `stacks/*.d/`). The toolkit only **notifies** you (at most once a day, via non-blocking `post-commit`) when a newer version exists; it **never self-modifies** — auto-executing remote code as hooks would be a supply-chain risk. Silence the notice with `QG_NO_UPDATE_CHECK=1`.
+
 ## 2. What each hook does
 
 | Hook               | Check                                                     | Level                          |
@@ -106,6 +108,7 @@ Metrics land in `.git/ai-metrics.log` (`SHA \t AI-level \t Signed-off-by \t inse
 | `QG_ALLOW_COMMIT_TO_MAIN=1`   | Temporarily allow direct commits to protected branches                         |
 | `QG_PROTECTED_BRANCHES`       | Custom protected branches (default `main master`)                              |
 | `QG_SKIP_TOOL_INSTALL=1`      | Skip the gitleaks best-effort auto-install during `setup`                      |
+| `QG_NO_UPDATE_CHECK=1`        | Disable the throttled "new version available" notice (notify-only, ≤ once/day)  |
 | `QG_DIFF_RANGE`               | Future CI reuse: switch the check target from the staged area to a diff range   |
 
 ## 6. Directory layout
@@ -113,16 +116,18 @@ Metrics land in `.git/ai-metrics.log` (`SHA \t AI-level \t Signed-off-by \t inse
 ```
 scripts/setup.{sh,ps1}           # one-line activation (core.hooksPath + gitleaks bootstrap + self-check)
 Makefile                         # make setup → sh scripts/setup.sh
-tests/run-tests.sh               # regression suite: sh tests/run-tests.sh (55 scenario assertions)
+tests/run-tests.sh               # regression suite: sh tests/run-tests.sh (59 scenario assertions)
 .githooks/                       # the whole toolkit, cp into any repo
+  VERSION                        # version stamp (drives the update notice)
   pre-commit                     # orchestration: common layer + stack overlay (skips merge/rebase)
   pre-push                       # orchestration: home for slow checks (to CI by default)
   prepare-commit-msg             # AI 3-level template + read auto-signal
   commit-msg                     # orchestration: title convention + Signed-off-by + AI trailer
-  post-commit                    # async metrics
+  post-commit                    # async metrics + throttled update notice
   lib/
     _lib.sh                      # shared lib: warn-only / file-list decoupling / logging
     detect.sh                    # stack detection: android | java
+    update-check.sh              # throttled "new version available" notice (notify-only)
   common/                        # universal checks (always run)
     secret-scan.sh               # gitleaks
     no-conflict-markers.sh       # conflict markers

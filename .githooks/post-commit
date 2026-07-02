@@ -12,4 +12,6 @@
   # 本地日志，便于事后聚合 AI 使用度量（未来可替换为发埋点事件）
   printf '%s\t%s\t%s\t%s\n' "$SHA" "${DEGREE:-none}" "${SIGNOFF:-none}" "$STAT" \
     >> "$ROOT/.git/ai-metrics.log"
+  # 限流的更新提示（只通知不自改；QG_NO_UPDATE_CHECK=1 可关）
+  sh "$ROOT/.githooks/lib/update-check.sh" || true
 } &

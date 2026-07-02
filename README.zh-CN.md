@@ -37,6 +37,8 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 
 > 受保护分支（`main`/`master`）的**初始提交**（空仓库、无父提交）自动放行。
 
+**如何更新**：更新是**手动**的（重跑上面那行即可，幂等、保留你的 `stacks/*.d/`）。工具只会在有新版时**提示**你（每天最多一次，走异步 `post-commit`），**绝不自改**——让钩子静默拉取远端代码自我覆盖是供应链攻击面。想关掉提示：`QG_NO_UPDATE_CHECK=1`。
+
 ## 二、各钩子做什么
 
 | 钩子               | 检查                                                | 档位                         |
@@ -106,6 +108,7 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 | `QG_ALLOW_COMMIT_TO_MAIN=1`   | 临时允许直接提交受保护分支                                                     |
 | `QG_PROTECTED_BRANCHES`       | 自定义受保护分支（默认 `main master`）                                         |
 | `QG_SKIP_TOOL_INSTALL=1`      | `setup` 时跳过 gitleaks 的 best-effort 自动安装                                |
+| `QG_NO_UPDATE_CHECK=1`        | 关闭「有新版可用」提示（仅通知、每天最多一次）                                 |
 | `QG_DIFF_RANGE`               | 未来 CI 复用：把检查对象从暂存区切到 diff range                               |
 
 ## 六、目录结构
@@ -113,16 +116,18 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 ```
 scripts/setup.{sh,ps1}           # 一键激活（core.hooksPath + gitleaks 引导 + 自检）
 Makefile                         # make setup → sh scripts/setup.sh
-tests/run-tests.sh               # 回归测试：sh tests/run-tests.sh（55 项场景断言）
+tests/run-tests.sh               # 回归测试：sh tests/run-tests.sh（59 项场景断言）
 .githooks/                       # 整个工具集，cp 进任何仓库即用
+  VERSION                        # 版本戳（驱动更新提示）
   pre-commit                     # 编排：通用层 + 栈叠加（merge/rebase 跳过）
   pre-push                       # 编排：慢检查下沉处（默认交 CI）
   prepare-commit-msg             # AI 三档模板 + 读自动信号
   commit-msg                     # 编排：标题规范 + Signed-off-by + AI trailer
-  post-commit                    # 异步度量埋点
+  post-commit                    # 异步度量埋点 + 限流更新提示
   lib/
     _lib.sh                      # 共享库：warn-only / 文件清单解耦 / 日志
     detect.sh                    # 侦测技术栈：android | java
+    update-check.sh              # 限流「有新版可用」提示（仅通知）
   common/                        # 全栈通用检查（永远跑）
     secret-scan.sh               # gitleaks
     no-conflict-markers.sh       # 冲突标记
