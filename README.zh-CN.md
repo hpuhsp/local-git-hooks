@@ -77,7 +77,7 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
    export QG_AI_TOOL="claude-code (claude-opus-4-8)"
    ```
 
-2. **提交时自报（兜底）**：未给自动信号时，编辑器里预置三档注释，**取消注释你选的一项**即可：
+2. **提交时自报（兜底）**：未给自动信号、且**确实会打开编辑器**时（交互式 `git commit` / commit.template；`-m`/`-F`、merge、squash、amend 一律不注入，脚本批量提交即使 `--no-verify` 也不会污染历史），编辑器里预置三档注释，**取消注释你选的一项**即可：
 
    ```
    # ── AI 参与度（取消注释你选的一项，默认 none）──────────

@@ -205,6 +205,9 @@ QG-AI: co-authored   # ← 选中
 
 **两条铁律**：准确优先（默认 none、不逼人乱填）；问责兜底（每个提交必有 Signed-off-by）。
 
+> **模板注入时机**：模板只在**会打开编辑器**的提交出现（`prepare-commit-msg` 按 `COMMIT_SOURCE` 判定：交互式 `git commit` / commit.template）；`-m`/`-F`、merge、squash、amend **不注入**——这类提交（含脚本批量提交）要标注 AI 请用方式 A 环境变量。
+> **`--no-verify` 的边界**：git 规定 `--no-verify` 跳过 commit-msg 但**不跳过** prepare-commit-msg——所以签名/AI trailer/标题检查都不会执行（模板则因上述时机判定不会注入）。本地钩子是反馈层，`--no-verify` 是合法逃生门；最终一致性由 CI 兜底（见 2.10，可在 CI 校验 `Signed-off-by` 存在性）。
+
 度量落在 `.git/ai-metrics.log`（`SHA \t AI档位 \t Signed-off-by \t 增删行`），在 `.git/` 内不进版本控制。
 
 ### 2.7 配置项（环境变量）

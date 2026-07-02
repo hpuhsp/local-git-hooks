@@ -77,7 +77,7 @@ The two stacks differ very little (mainly "which formatter"), so it's designed a
    export QG_AI_TOOL="claude-code (claude-opus-4-8)"
    ```
 
-2. **Self-report at commit time (fallback)**: when there's no auto-signal, the editor pre-fills three commented options — **uncomment the one you pick**:
+2. **Self-report at commit time (fallback)**: when there's no auto-signal **and an editor will actually open** (interactive `git commit` / commit.template — never for `-m`/`-F`, merge, squash, amend, so scripted commits stay clean even with `--no-verify`), the editor pre-fills three commented options — **uncomment the one you pick**:
 
    ```
    # ── AI involvement (uncomment the one you pick, default none) ──

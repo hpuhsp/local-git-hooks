@@ -232,6 +232,27 @@ ok "I2 远端同版本不提示" "[ -z \"\$(rm -f .git/.hooks-update-check; QG_U
 ok "I3 远端新版本给出提示" "rm -f .git/.hooks-update-check; QG_UPDATE_URL='$RN' sh '$UC' 2>&1 | grep -q 新版"
 ok "I4 节流：24h 内不再查" "[ -z \"\$(QG_UPDATE_URL='$RN' sh '$UC' 2>&1)\" ]"
 # === AI MODIFIED END ===
+
+# ════ J. AI 模板注入时机（COMMIT_SOURCE 判定；回归：--no-verify -m 不污染历史） ══
+echo "J. AI 模板注入时机"
+new_repo repo-inject
+ok "J0 建仓切特性分支" 'echo base >base.txt && git add base.txt && git commit -q -m "chore: init" && git checkout -q -b feature/inject'
+ok "J1 -m 提交不注入模板" 'echo 1 >j1.txt && git add j1.txt && git commit -q -m "feat: add j1" && ! git log -1 --format=%B | grep -q "QG-AI"'
+ok "J2 --no-verify -m 不污染历史（回归）" 'echo 2 >j2.txt && git add j2.txt && git commit -q --no-verify -m "feat: add j2" && ! git log -1 --format=%B | grep -qE "QG-AI|AI 参与度"'
+cat >ed-need-tpl.sh <<'EOF'
+#!/bin/sh
+grep -q "QG-AI:" "$1" || exit 1
+printf 'feat: 编辑器路径注入验证\n' >"$1"
+EOF
+ok "J3 编辑器提交注入模板" 'echo 3 >j3.txt && git add j3.txt && GIT_EDITOR="sh ed-need-tpl.sh" git commit -q'
+ok "J4 编辑器提交历史干净且含签名" 'git log -1 --format=%B | grep -q "^Signed-off-by:" && ! git log -1 --format=%B | grep -q "QG-AI"'
+cat >ed-no-tpl.sh <<'EOF'
+#!/bin/sh
+grep -q "QG-AI:" "$1" && exit 1
+printf 'feat: 自动信号时不注入\n' >"$1"
+EOF
+ok "J5 有自动信号时编辑器不注入" 'echo 5 >j5.txt && git add j5.txt && QG_AI_DEGREE=assisted GIT_EDITOR="sh ed-no-tpl.sh" git commit -q && git log -1 --format=%B | grep -q "^Assisted-by:"'
+
 # ════ 汇总 ════════════════════════════════════════════════════
 TOTAL=$((PASS + FAIL))
 RATE=$((PASS * 100 / TOTAL))

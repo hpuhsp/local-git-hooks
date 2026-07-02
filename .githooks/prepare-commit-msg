@@ -1,15 +1,25 @@
 #!/bin/sh
 # .githooks/prepare-commit-msg — 预置 AI 三档选项 + 读自动信号
-# 两段式取值：优先工具自动信号；读不到则在编辑器里预置三档供取消注释自报。
+# 参数：$1=消息文件  $2=来源（COMMIT_SOURCE）：
+#   空=交互编辑器 | message(-m/-F) | template | merge | squash | commit(amend/-c/-C)
 MSG_FILE="$1"
+COMMIT_SOURCE="${2:-}"
 
-# (1) 优先读工具自动信号（支持的 AI 工具会设置这些环境变量）
-AI_DEGREE="${QG_AI_DEGREE:-}"    # assisted | co-authored | generated
+# (1) 工具已给自动信号 → 无需自报模板
+[ -n "${QG_AI_DEGREE:-}" ] && exit 0
 
-# (2) 工具没给信号 → 预置三档选项（默认 none）。已存在则不重复追加（amend/二次编辑）。
-if [ -z "$AI_DEGREE" ]; then
-  if ! grep -qE '^#? *QG-AI:' "$MSG_FILE" 2>/dev/null; then
-    cat >> "$MSG_FILE" <<'TPL'
+# (2) 只在「会打开编辑器」的提交注入模板（空 / template）。
+#     -m、merge、squash、amend 不开编辑器，模板没人看见，只能依赖 commit-msg
+#     清理兜底；而 --no-verify 恰好跳过 commit-msg（git 不跳过本钩子），
+#     模板会污染提交历史 —— 故从源头不注入。
+case "$COMMIT_SOURCE" in
+  "" | template) ;;
+  *) exit 0 ;;
+esac
+
+# (3) 已存在则不重复追加（amend / 二次编辑）
+if ! grep -qE '^#? *QG-AI:' "$MSG_FILE" 2>/dev/null; then
+  cat >>"$MSG_FILE" <<'TPL'
 
 # ── AI 参与度（取消注释你选的一项，默认 none）──────────
 # QG-AI: assisted      # AI 轻度协助（约 ≤33%）
@@ -17,7 +27,6 @@ if [ -z "$AI_DEGREE" ]; then
 # QG-AI: generated     # 主要由 AI 生成（67%+）
 # ───────────────────────────────────────────────
 TPL
-  fi
 fi
 
 # 注：正式 trailer 统一在 commit-msg 阶段生成，避免重复 / 格式漂移。
