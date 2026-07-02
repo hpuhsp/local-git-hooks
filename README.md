@@ -48,7 +48,7 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 | pre-commit         | Gradle/Maven 依赖改动提醒                           | 告警                         |
 | pre-commit         | **栈叠加**：`stacks/<android\|java>/pre-commit.d/`  | 按需（默认空）               |
 | prepare-commit-msg | 预置 AI 三档选项 + 读工具自动信号                   | —                            |
-| commit-msg         | 标题规范（Conventional Commits，**纯 shell**）      | **阻断**（merge/revert 放行）|
+| commit-msg         | 标题规范 + **内容质量**（格式 + 拦敷衍词，纯 shell）| **阻断**（merge/revert 放行）|
 | commit-msg         | **强制 `Signed-off-by`** + 生成 AI trailer          | **阻断**(signoff) / 柔性(AI) |
 | post-commit        | 异步 AI 使用度量埋点                                | 不阻塞                       |
 | pre-push           | **栈叠加**：`stacks/<...>/pre-push.d/`（默认交 CI） | 按需（默认空）               |
@@ -96,6 +96,7 @@ gitleaks 也可手动装：`winget install Gitleaks.Gitleaks`（Windows）/ `bre
 | 变量                          | 作用                                                                           |
 | ----------------------------- | ------------------------------------------------------------------------------ |
 | `QG_WARN_ONLY=1`              | **试点模式**：阻断级检查降级为「告警但放行」（全员推广前两周）                 |
+| `QG_TITLE_QUALITY=0`          | 关闭标题「内容质量」层，只保留 Conventional Commits 格式校验                    |
 | `QG_PROFILE`                  | 强制技术栈（`android`/`java`），覆盖自动侦测                                    |
 | `QG_AI_DEGREE` / `QG_AI_TOOL` | AI 自动信号来源                                                                |
 | `QG_AI_EMAIL`                 | AI trailer 的邮箱（默认 `ai@noreply.local`）；令 `Co-authored-by` 可被平台识别 |

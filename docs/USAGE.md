@@ -144,12 +144,22 @@ android
 | pre-commit  | Java/Kotlin 格式化                         | 自动修（缺工具→跳过）        |
 | pre-commit  | Gradle/Maven 依赖改动提醒                  | 告警                         |
 | pre-commit  | 栈叠加 `stacks/<栈>/pre-commit.d/*`        | 按需（默认空）               |
-| commit-msg  | 标题规范（Conventional Commits，纯 shell） | **阻断**（merge/revert 放行）|
+| commit-msg  | 标题规范 + 内容质量（格式 + 拦敷衍词，纯 shell） | **阻断**（merge/revert 放行）|
 | commit-msg  | **强制 Signed-off-by** + 生成 AI trailer   | **阻断**(signoff) / 柔性(AI) |
 | post-commit | 异步 AI 度量埋点                           | 不阻塞                       |
 | pre-push    | 栈叠加 `stacks/<栈>/pre-push.d/*`          | 按需（默认空，测试交 CI）    |
 
 > `pre-commit` 在 **merge / rebase** 期间自动跳过，避免解决冲突时被反复打扰。
+
+**标题检查的两层**（`commit-msg`）：
+
+1. **格式层**：必须 `<type>(<scope 可选>): <描述>`，挡掉裸写的 `bug fix`、`update readme`。
+2. **内容质量层**：格式合规也不够——挡掉「敷衍」描述，避免 `fix: bug`、`feat: wip`、`fix: 修改`、`fix: 123` 这种。判定近零误报，只在三种情况拦：
+   - 整个描述恰为敷衍词（`bug`/`update`/`wip`/`tmp`/`修改`/`修复`/`更新` 等，黑名单在 `common/commit-title.sh` 可增补）；
+   - 描述只是数字 / 符号（`fix: 123`、`fix: ...`）；
+   - 纯英文描述短于 3 字符（`fix: ok`）。
+
+   合理的短描述**不误伤**：`fix: typo`、`fix: NPE`、`fix: 修复登录空指针` 均放行。想只保留格式层：`export QG_TITLE_QUALITY=0`。
 
 ### 2.5 通用层 + 栈叠加：怎么加栈专属规则
 
@@ -200,6 +210,7 @@ QG-AI: co-authored   # ← 选中
 | 变量                          | 默认               | 作用                                                            |
 | ----------------------------- | ------------------ | --------------------------------------------------------------- |
 | `QG_WARN_ONLY`                | `0`                | 设 `1` → **试点模式**：阻断级降级为「告警但放行」（推广前两周） |
+| `QG_TITLE_QUALITY`            | `1`                | 设 `0` → 关闭标题「内容质量」层，只保留格式校验                 |
 | `QG_PROFILE`                  | —                  | 强制技术栈（`android`/`java`），覆盖自动侦测                    |
 | `QG_AI_DEGREE` / `QG_AI_TOOL` | —                  | AI 自动信号来源                                                 |
 | `QG_AI_EMAIL`                 | `ai@noreply.local` | AI trailer 邮箱，令 `Co-authored-by` 被平台识别                 |
@@ -219,7 +230,8 @@ QG-AI: co-authored   # ← 选中
 | gitleaks 误报             | 在 `.gitleaksignore` 写入指纹豁免                               |
 | 私钥误报（实为模板）      | 重命名为 `*.example` / `*.sample` / `*.template`                |
 | 试点期不想被挡            | `export QG_WARN_ONLY=1`                                         |
-| 标题被拦                  | 用 `type(scope): 简述`，如 `feat(pig): 新增育肥统计`            |
+| 标题被拦（格式）          | 用 `type(scope): 简述`，如 `feat(pig): 新增育肥统计`            |
+| 标题被拦（敷衍）          | 别用 `fix: bug`/`feat: wip`，写清改了什么；或 `QG_TITLE_QUALITY=0` 临时关质量层 |
 | 侦测栈不准                | 仓库根建 `.githooks.profile`（首行 `android`/`java`），或 `QG_PROFILE=java` |
 | 想加本地测试把关          | 往 `stacks/<栈>/pre-push.d/` 放脚本（默认交 CI）                |
 | 紧急绕过全部钩子          | `git commit --no-verify`（应极少用；CI 仍会兜底）               |
